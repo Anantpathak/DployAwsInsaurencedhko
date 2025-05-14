@@ -1,0 +1,1 @@
+    const handleDotClick = (index: number) => {

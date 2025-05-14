@@ -1,0 +1,44 @@
+/* Sidebar Styles */
+.custom-sidebar {
+    background-color: white;
+    border-right: 1px solid #eee;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    height: 100vh;
+    position: fixed;
+    top: 80px;
+    left: -280px;
+    width: 260px;
+    overflow-y: auto;
+    z-index: 1040;
+    transition: left 0.3s ease-in-out;
+  }
+  
+  .custom-sidebar.active {
+    left: 0;
+  }
+  
+  .custom-sidebar .form-check {
+    margin-bottom: 12px;
+  }
+  
+  /* On desktop, stick the sidebar without animation */
+  @media (min-width: 768px) {
+    .custom-sidebar {
+      position: sticky;
+      left: 0 !important;
+      top: 80px;
+      height: auto;
+    }
+  }
+  
+  /* Fix for margin/padding pushing content down */
+  .container-fluid {
+    padding-top: 0;
+  }
+  
+  /* Clean nested row spacing */
+  .row > .row {
+    margin-top: 0 !important;
+  }
+  
