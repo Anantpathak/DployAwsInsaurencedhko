@@ -7,6 +7,7 @@ import Advisor from "../screens/advisor";
 import Dasboard from "./AdminDashboard";
 import { Dropdown,  } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+
 // Dummy page components for demonstration
 
 const InsurancePage = () => (
@@ -122,7 +123,7 @@ const token = localStorage.getItem('token');
 
 localStorage.removeItem('token');
 localStorage.removeItem('user');
-window.location.href = 'http://localhost:3001/';
+navigate('/')
 setUser(null);
  };
     return (

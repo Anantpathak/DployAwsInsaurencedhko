@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link } from 'react-router-dom';
-
+import { useNavigate } from 'react-router-dom';
 
 import './InsuranceDekhoNavbar.css'; // Keep the CSS import
 import './LoginModal.css'; // Import CSS for the modal
@@ -14,7 +14,11 @@ const MySwal = withReactContent(Swal);
 const Navbar = () => {
 
 
+ const navigate = useNavigate();
 
+  const goToHome = () => {
+    navigate('/'); // Navigates to the path associated with your Home component
+  };
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginStep, setLoginStep] = useState(1); // 1: Mobile Number, 2: OTP
 
@@ -237,7 +241,7 @@ const API_BASE = process.env.REACT_APP_API_URL;
       </Dropdown.Toggle>
       <Dropdown.Menu>
         <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
-        <Dropdown.Item onClick={() => { window.location.href = 'http://localhost:3001/register'; }}>Profile</Dropdown.Item>
+        <Dropdown.Item onClick={goToHome}>Profile</Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
   )}
