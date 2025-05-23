@@ -2,66 +2,108 @@ const express = require('express');
 const router = express.Router();
 const CarOwner = require('../models/carPayment');
 
-// Create
+// Create a new car owner entry
 router.post('/', async (req, res) => {
   try {
-    const newOwner = new CarOwner(req.body);
+    const { loan, name, email, address, registrationNumber, pan, dob, rto, amount, userId, policyId } = req.body;
+
+    // Basic validation
+    if (!name || !email || !address || !registrationNumber || !pan || !dob || !rto || !amount || !userId || !policyId) {
+      return res.status(400).json({ error: 'All required fields must be provided' });
+    }
+
+    const newOwner = new CarOwner({
+      loan,
+      name,
+      email,
+      address,
+      registrationNumber,
+      pan,
+      dob,
+      rto,
+      amount,
+      userId,
+      policyId
+    });
+
     const saved = await newOwner.save();
-    res.status(201).json(saved);
+    res.status(201).json({ message: 'Car owner created successfully', data: saved });
   } catch (err) {
-    res.status(500).json({ error: 'Creation failed', details: err.message });
+    if (err.code === 11000) {
+      res.status(400).json({ error: 'Duplicate registration number', details: err.message });
+    } else {
+      res.status(500).json({ error: 'Creation failed', details: err.message });
+    }
   }
 });
 
-// Read All
+// Read all car owners
 router.get('/', async (req, res) => {
   try {
-    const owners = await CarOwner.find();
-    res.json(owners);
+    const owners = await CarOwner.find().sort({ createdAt: -1 }); // Sort by creation date, newest first
+    res.status(200).json(owners);
   } catch (err) {
-    res.status(500).json({ error: 'Fetch failed' });
+    res.status(500).json({ error: 'Failed to fetch car owners', details: err.message });
   }
 });
 
-// Get By User ID
+// Get car owners by user ID
 router.get('/user/:userId', async (req, res) => {
   try {
-    const data = await CarOwner.findOne({ userId: req.params.userId });
-    if (!data) return res.status(404).json({ message: 'Not found' });
-    res.json(data);
+    const data = await CarOwner.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+    if (!data || data.length === 0) {
+      return res.status(404).json({ message: 'No records found for this user' });
+    }
+    res.status(200).json(data);
   } catch (err) {
-    res.status(500).json({ error: 'Fetch by userId failed' });
+    res.status(500).json({ error: 'Failed to fetch by userId', details: err.message });
   }
 });
 
-// Get by DB ID
+// Get car owner by DB ID
 router.get('/:id', async (req, res) => {
   try {
     const owner = await CarOwner.findById(req.params.id);
-    if (!owner) return res.status(404).json({ message: 'Not found' });
-    res.json(owner);
+    if (!owner) {
+      return res.status(404).json({ message: 'Car owner not found' });
+    }
+    res.status(200).json(owner);
   } catch (err) {
-    res.status(500).json({ error: 'Fetch by ID failed' });
+    res.status(500).json({ error: 'Failed to fetch by ID', details: err.message });
   }
 });
 
-// Update
+// Update car owner by ID
 router.put('/:id', async (req, res) => {
   try {
-    const updated = await CarOwner.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updated);
+    const updated = await CarOwner.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true, runValidators: true }
+    );
+    if (!updated) {
+      return res.status(404).json({ message: 'Car owner not found' });
+    }
+    res.status(200).json({ message: 'Updated successfully', data: updated });
   } catch (err) {
-    res.status(500).json({ error: 'Update failed' });
+    if (err.code === 11000) {
+      res.status(400).json({ error: 'Duplicate registration number', details: err.message });
+    } else {
+      res.status(500).json({ error: 'Update failed', details: err.message });
+    }
   }
 });
 
-// Delete
+// Delete car owner by ID
 router.delete('/:id', async (req, res) => {
   try {
-    await CarOwner.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Deleted successfully' });
+    const deleted = await CarOwner.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Car owner not found' });
+    }
+    res.status(200).json({ message: 'Deleted successfully' });
   } catch (err) {
-    res.status(500).json({ error: 'Delete failed' });
+    res.status(500).json({ error: 'Delete failed', details: err.message });
   }
 });
 

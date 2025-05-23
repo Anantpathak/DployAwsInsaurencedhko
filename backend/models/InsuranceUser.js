@@ -8,8 +8,9 @@ const InsuranceUserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   dateOfBirth: { type: Date, required: true },
+  pan: { type: String, required: true, unique: true, match: /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/ }, // PAN format validation
   policyTypes: [{ type: String, enum: ['car', 'health', 'bike', 'term', 'investment'] }],
-  policyNumber: { type: String, },
+  policyNumber: { type: String },
   isAdmin: { type: Boolean, default: false },
 }, { timestamps: true });
 

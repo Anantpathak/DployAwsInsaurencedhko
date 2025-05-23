@@ -25,6 +25,7 @@ import Investment from "./screens/investment";
 import Buisness from "./screens/buisness";
 import Family from "./screens/family";
 import Register from "./components/CustomerRegister";
+import HomeVisit from "./screens/HomeAssistance";
 // Assume you have a way to get the current user and their admin status
 const getCurrentUser = () => {
   // Replace this with your actual authentication logic
@@ -68,6 +69,7 @@ function App() {
         <Route path="/family" element={<Family />} />
 <Route path="/register" element={<Register />} />
 <Route path="/news" element={<News />} />
+<Route path="/homeVisit" element={<HomeVisit />} />
         {/* Admin Routes (Secured) */}
         <Route
           path="/admin"

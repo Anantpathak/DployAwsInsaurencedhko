@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const CarOwner = require('../models/healthPaymernt');
+const HealthPayment = require('../models/healthPaymernt');
 
 // Create
 router.post('/', async (req, res) => {
   try {
-    const newOwner = new CarOwner(req.body);
-    const saved = await newOwner.save();
+    const newPolicy = new HealthPayment(req.body);
+    const saved = await newPolicy.save();
     res.status(201).json(saved);
   } catch (err) {
     res.status(500).json({ error: 'Creation failed', details: err.message });
@@ -16,8 +16,8 @@ router.post('/', async (req, res) => {
 // Read All
 router.get('/', async (req, res) => {
   try {
-    const owners = await CarOwner.find();
-    res.json(owners);
+    const policies = await HealthPayment.find();
+    res.json(policies);
   } catch (err) {
     res.status(500).json({ error: 'Fetch failed' });
   }
@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
 // Get By User ID
 router.get('/user/:userId', async (req, res) => {
   try {
-    const data = await CarOwner.findOne({ userId: req.params.userId });
+    const data = await HealthPayment.findOne({ userId: req.params.userId });
     if (!data) return res.status(404).json({ message: 'Not found' });
     res.json(data);
   } catch (err) {
@@ -37,9 +37,9 @@ router.get('/user/:userId', async (req, res) => {
 // Get by DB ID
 router.get('/:id', async (req, res) => {
   try {
-    const owner = await CarOwner.findById(req.params.id);
-    if (!owner) return res.status(404).json({ message: 'Not found' });
-    res.json(owner);
+    const policy = await HealthPayment.findById(req.params.id);
+    if (!policy) return res.status(404).json({ message: 'Not found' });
+    res.json(policy);
   } catch (err) {
     res.status(500).json({ error: 'Fetch by ID failed' });
   }
@@ -48,7 +48,7 @@ router.get('/:id', async (req, res) => {
 // Update
 router.put('/:id', async (req, res) => {
   try {
-    const updated = await CarOwner.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await HealthPayment.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: 'Update failed' });
@@ -58,7 +58,7 @@ router.put('/:id', async (req, res) => {
 // Delete
 router.delete('/:id', async (req, res) => {
   try {
-    await CarOwner.findByIdAndDelete(req.params.id);
+    await HealthPayment.findByIdAndDelete(req.params.id);
     res.json({ message: 'Deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Delete failed' });

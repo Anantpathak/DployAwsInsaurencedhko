@@ -62,7 +62,10 @@ const bikePolicyFormRoutes = require('./routes/bikePayment');
 app.use('/api/bike-policy', bikePolicyFormRoutes);
 const healthPolicyFormRoutes = require('./routes/healthPayment');
 app.use('/api/health-policy', healthPolicyFormRoutes);
-
+const termPolicyFormRoutes = require('./routes/termPayment');
+app.use('/api/term-payment', termPolicyFormRoutes);
+const investmentPolicyFormRoutes = require('./routes/investmentPayment');
+app.use('/api/investment-payment', investmentPolicyFormRoutes);
 // Serve static files from React
 app.use(express.static(path.join(__dirname, '../frontend/build')));
 

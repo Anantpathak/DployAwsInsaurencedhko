@@ -1,0 +1,594 @@
+.home-assistance-page {
+  font-family: sans-serif;
+  color: #333;
+}
+
+.adviceFromWrap.healthAdvisor {
+  background-color: #f9f9f9;
+  padding: 30px 0;
+}
+
+.adviceFromWrap.healthAdvisor .leftCell h1 {
+  font-size: 2.2em;
+  line-height: 1.2;
+  margin-bottom: 20px;
+}
+
+.adviceFromWrap.healthAdvisor .leftCell .advice {
+  color: #007bff; /* Example primary color */
+}
+
+.adviceFromWrap.healthAdvisor .leftCell p {
+  font-size: 1em;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerText {
+  display: flex;
+  align-items: flex-start;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerText .bannerImg {
+  margin-right: 20px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerText .expertList ul {
+  list-style: none;
+  padding: 0;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerText .expertList li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerText .expertList .expertIcon {
+  margin-right: 10px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerText .expertText h6 {
+  font-size: 1em;
+  margin-bottom: 5px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerText .expertText p {
+  font-size: 0.9em;
+  color: #777;
+  margin-bottom: 0;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm h2 {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .fusionSlots {
+  margin-bottom: 15px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .limitedSlots h6 {
+  font-size: 0.9em;
+  color: #dc3545; /* Example danger color */
+  margin-bottom: 5px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .totalSlots ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .totalSlots li {
+  display: flex;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .totalSlots .slotIcon {
+  margin-right: 5px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .totalSlots p {
+  font-size: 0.9em;
+  margin-bottom: 0;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .malefemalewrap {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  margin-bottom: 15px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .malefemalewrap li {
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .malefemalewrap li.active {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .form-control {
+  margin-bottom: 15px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .inputborderbox .input-field input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .inputborderbox .input-field label {
+  font-size: 0.9em;
+  color: #777;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .withEdit {
+  position: relative;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .resendotp {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #007bff;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .getDwhtsap label {
+  display: flex;
+  align-items: center;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .getDwhtsap .subtext {
+  margin-left: 5px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .submitButton {
+  background-color: #28a745; /* Example success color */
+  color: #fff;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .submitButton:hover {
+  opacity: 0.9;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .iagree {
+  font-size: 0.8em;
+  color: #777;
+  margin-top: 10px;
+}
+
+.adviceFromWrap.healthAdvisor .lpBannerForm .iagree .link {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.advantages-section {
+  padding: 40px 0;
+  text-align: center;
+}
+
+.advantages-section h2 {
+  font-size: 1.8em;
+  margin-bottom: 15px;
+}
+
+.advantages-section p {
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.advantages-section .advanateText {
+  margin-bottom: 30px;
+}
+
+.advantages-section .advanateText img {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 15px;
+}
+
+.advantages-section .advanateText h3 {
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+.advantages-section .advanateText p {
+  font-size: 0.95em;
+  color: #777;
+}
+
+.advantages-section .expertVisitBtm {
+  margin-top: 30px;
+}
+
+.advantages-section .expertVisitBtm .button {
+  background-color: #007bff;
+  color: #fff;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.advantages-section .expertVisitBtm .button:hover {
+  opacity: 0.9;
+}
+
+.advantages-section .expertBgRight {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+}
+
+.healthHomeBenifit {
+  padding: 40px 0;
+  background-color: #f9f9f9;
+}
+
+.healthHomeBenifit .carSummary h2 {
+  font-size: 1.8em;
+  margin-bottom: 15px;
+}
+
+.healthHomeBenifit .carSummary .subtxt {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.healthHomeBenifit .carSummary ul {
+  list-style: none;
+  padding: 0;
+}
+
+.healthHomeBenifit .carSummary li {
+  margin-bottom: 15px;
+}
+
+.healthHomeBenifit .carSummary h3 {
+  font-size: 1.1em;
+  margin-bottom: 5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .adviceFromWrap.healthAdvisor .lpBannerText {
+    flex-direction: column;
+    align-items: center;
+  }
+  .adviceFromWrap.healthAdvisor .lpBannerText .bannerImg {
+    margin-right: 0;
+    margin-bottom: 20px;
+  }
+  .advantages-section .row {
+    flex-direction: column;
+    align-items: center;
+  }
+  .advantages-section .advanateText {
+    width: 80%;
+    margin-bottom: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .adviceFromWrap.healthAdvisor .leftCell h1 {
+    font-size: 1.8em;
+  }
+}
+.gsc-row {
+  padding: 20px;
+}
+
+.advantages-heading {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.advantages-heading h2 {
+  font-size: 1.8em;
+  margin-bottom: 10px;
+}
+
+.advantages-heading p {
+  color: #666;
+}
+
+.advanate-text-container {
+  display: flex;
+  flex-wrap: wrap; /* Allows items to wrap to the next line on smaller screens */
+  justify-content: space-around; /* Distributes space evenly */
+  margin-bottom: 30px;
+}
+
+.advanateText {
+  text-align: center;
+  margin-bottom: 30px;
+  flex-basis: calc(25% - 20px); /* Roughly 4 columns with some spacing */
+}
+
+.advanateText img {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.advanateText h3 {
+  font-size: 1.2em;
+  margin-bottom: 5px;
+}
+
+.advanateText p {
+  color: #777;
+  font-size: 0.95em;
+}
+
+.expertVisitBtm {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.expertVisitBtm .button {
+  background-color: #007bff;
+  color: #fff;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.expertVisitBtm .button:hover {
+  opacity: 0.9;
+}
+
+.expertBgRight {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 992px) {
+  .advanateText {
+    flex-basis: calc(50% - 20px); /* Two columns on medium screens */
+  }
+}
+
+@media (max-width: 768px) {
+  .advanateText {
+    flex-basis: 100%; /* One column on small screens */
+  }
+}/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 500px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.modal-header button {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+.modal-body {
+  /* Styles for the content within the modal */
+}
+
+.home-visit-time-slot,
+.your-location-details {
+  text-align: center;
+}
+
+.calendar-icon,
+.location-icon {
+  margin-bottom: 15px;
+}
+
+.select-date h3,
+.select-time h3 {
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+
+.date-options button,
+.time-options button {
+  padding: 10px 15px;
+  margin: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.location-input {
+  margin-top: 20px;
+}
+
+.location-input input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.location-input button {
+  padding: 10px 15px;
+  margin-bottom: 10px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  text-align: center;
+}
+
+.modal-content .button {
+  background-color: #dc3545; /* Example primary color */
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.modal-content .button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}/* Calendar Styles */
+.calendar {
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.calendar-header h2 {
+  font-size: 1.2em;
+  margin: 0;
+}
+
+.calendar-header button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1em;
+  padding: 5px;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 5px;
+  text-align: center;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.calendar-day {
+  text-align: center;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.calendar-day:hover {
+  background-color: #f0f0f0;
+}
+
+.calendar-day.selected {
+  background-color: #007bff;
+  color: white;
+}
+
+.calendar-day.empty {
+  cursor: default;
+}
+
+.calendar-day.empty:hover {
+  background-color: transparent;
+}
+
+.select-date button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: left;
+  background-color: white;
+}
+
+.select-date button:hover {
+  background-color: #f9f9f9;
+}
+
+.time-options {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.time-options button {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: white;
+}
+
+.time-options button.selected {
+  background-color: #007bff;
+  color: white;
+}
+
+.time-options button:hover {
+  background-color: #f0f0f0;
+}

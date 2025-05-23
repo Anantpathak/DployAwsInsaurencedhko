@@ -20,6 +20,14 @@ router.post(
     check("coverAmount").notEmpty(),
     check("insuranceFor").isIn(["Personal", "Couple", "Family", "Father", "Mother"]),
     check("areaPincode").notEmpty(),
+    check("gender").isIn(["Male", "Female", "Other"]),
+    check("members").optional().isArray(),
+    check("members.*.relationship").isIn(["You", "Spouse", "Daughter", "Son", "Father", "Mother"]),
+    check("members.*.age").isInt({ min: 0 }),
+    check("members.*.count").optional().isInt({ min: 1 }),
+    check("knownDiseases").optional().isArray(),
+    check("knownDiseases.*").isIn(["No existing disease", "Diabetes", "BP/Hypertension", "Heart Disease", "Asthma", "Thyroid Disorder", "Other"]),
+    check("otherDisease").optional().isString(),
     check("keyFeatures").optional().isArray(),
   ],
   handleValidationErrors,
@@ -47,12 +55,32 @@ router.get("/all", async (_req, res) => {
 // FILTER
 router.get("/filter", async (req, res) => {
   try {
-    const { insuranceFor, areaPincode, coverAmount } = req.query;
+    const { insuranceFor, areaPincode, coverAmount, gender, members, knownDiseases, otherDisease } = req.query;
     const query = {};
 
     if (insuranceFor) query.insuranceFor = insuranceFor;
     if (areaPincode) query.areaPincode = areaPincode;
     if (coverAmount) query.coverAmount = coverAmount;
+    if (gender) query.gender = gender;
+    if (knownDiseases) {
+      const diseases = JSON.parse(knownDiseases);
+      query.knownDiseases = { $in: diseases };
+    }
+    if (otherDisease) {
+      query.otherDisease = otherDisease;
+    }
+    if (members) {
+      const parsedMembers = JSON.parse(members);
+      query.members = {
+        $elemMatch: {
+          $or: parsedMembers.map(member => ({
+            relationship: member.relationship,
+            age: { $gte: member.age },
+            count: member.count
+          }))
+        }
+      };
+    }
 
     const filtered = await HealthInsuranceProvider.find(query);
     res.json(filtered);
@@ -71,8 +99,15 @@ router.put(
     check("coverAmount").optional().notEmpty(),
     check("areaPincode").optional().notEmpty(),
     check("insuranceFor").optional().isIn(["Personal", "Couple", "Family", "Father", "Mother"]),
+    check("gender").optional().isIn(["Male", "Female", "Other"]),
+    check("members").optional().isArray(),
+    check("members.*.relationship").optional().isIn(["You", "Spouse", "Daughter", "Son", "Father", "Mother"]),
+    check("members.*.age").optional().isInt({ min: 0 }),
+    check("members.*.count").optional().isInt({ min: 1 }),
+    check("knownDiseases").optional().isArray(),
+    check("knownDiseases.*").optional().isIn(["No existing disease", "Diabetes", "BP/Hypertension", "Heart Disease", "Asthma", "Thyroid Disorder", "Other"]),
+    check("otherDisease").optional().isString(),
     check("keyFeatures").optional().isArray(),
-
   ],
   handleValidationErrors,
   async (req, res) => {

@@ -21,7 +21,14 @@ router.post(
     check("claimType").notEmpty().withMessage("Claim Type is required"),
     check("premiumStartingFrom").isNumeric().withMessage("Premium amount must be a number"),
     check("insuranceTypes").isArray().withMessage("Insurance types must be an array"),
-    check("keyFeatures").optional().isArray()
+    check("keyFeatures").optional().isArray(),
+    check("carBrand").notEmpty().withMessage("Car brand is required"),
+    check("carBrandModel").notEmpty().withMessage("Car brand model is required"),
+    check("typeOfCar").isIn(["Petrol", "Diesel", "CNG"]).withMessage("Type of car must be Petrol, Diesel, or CNG"),
+    check("cityCarRegistered").notEmpty().withMessage("City of car registration is required"),
+    check("carBuyedYear")
+      .isInt({ min: 1900, max: new Date().getFullYear() })
+      .withMessage(`Car buyed year must be between 1900 and ${new Date().getFullYear()}`)
   ],
   handleValidationErrors,
   async (req, res) => {
@@ -63,6 +70,46 @@ router.get('/filter', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+// GET /api/insurance-provider/car-details
+router.get(
+  "/car-details",
+  [
+    check("carBrand").optional().notEmpty().withMessage("Car brand cannot be empty"),
+    check("carBrandModel").optional().notEmpty().withMessage("Car brand model cannot be empty"),
+    check("typeOfCar").optional().isIn(["Petrol", "Diesel", "CNG"]).withMessage("Type of car must be Petrol, Diesel, or CNG"),
+    check("cityCarRegistered").optional().notEmpty().withMessage("City of car registration cannot be empty"),
+    check("carBuyedYear")
+      .optional()
+      .isInt({ min: 1900, max: new Date().getFullYear() })
+      .withMessage(`Car buyed year must be between 1900 and ${new Date().getFullYear()}`)
+  ],
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { carBrand, carBrandModel, typeOfCar, cityCarRegistered, carBuyedYear } = req.query;
+
+      // Build query object dynamically based on provided parameters
+      const query = {};
+      if (carBrand) query.carBrand = carBrand;
+      if (carBrandModel) query.carBrandModel = carBrandModel;
+      if (typeOfCar) query.typeOfCar = typeOfCar;
+      if (cityCarRegistered) query.cityCarRegistered = cityCarRegistered;
+      if (carBuyedYear) query.carBuyedYear = carBuyedYear;
+
+      if (Object.keys(query).length === 0) {
+        return res.status(400).json({ error: "At least one filter parameter is required" });
+      }
+
+      const providers = await InsuranceProvider.find(query);
+      res.json(providers);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  }
+);
+
 // PUT /api/insurance-provider/update/:id
 router.put(
   "/update/:id",
@@ -74,6 +121,14 @@ router.put(
     check("premiumStartingFrom").optional().isNumeric().withMessage("Premium amount must be a number"),
     check("insuranceTypes").optional().isArray().withMessage("Insurance types must be an array"),
     check("keyFeatures").optional().isArray().withMessage("Key features must be an array"),
+    check("carBrand").optional().notEmpty().withMessage("Car brand cannot be empty"),
+    check("carBrandModel").optional().notEmpty().withMessage("Car brand model cannot be empty"),
+    check("typeOfCar").optional().isIn(["Petrol", "Diesel", "CNG"]).withMessage("Type of car must be Petrol, Diesel, or CNG"),
+    check("cityCarRegistered").optional().notEmpty().withMessage("City of car registration cannot be empty"),
+    check("carBuyedYear")
+      .optional()
+      .isInt({ min: 1900, max: new Date().getFullYear() })
+      .withMessage(`Car buyed year must be between 1900 and ${new Date().getFullYear()}`)
   ],
   handleValidationErrors,
   async (req, res) => {
@@ -94,6 +149,7 @@ router.put(
     }
   }
 );
+
 // DELETE /api/insurance-provider/delete/:id
 router.delete("/delete/:id", async (req, res) => {
   try {
@@ -109,6 +165,19 @@ router.delete("/delete/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// GET /api/insurance-provider/:id
+router.get("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const provider = await InsuranceProvider.findById(id);
 
+    if (!provider) {
+      return res.status(404).json({ error: "Insurance provider not found" });
+    }
 
+    res.json(provider);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 module.exports = router;
