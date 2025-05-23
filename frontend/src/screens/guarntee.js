@@ -2,37 +2,45 @@ import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Table, Button, Form, Alert, Badge, Image } from "react-bootstrap";
 
-export default function InsuranceProviderTable() {
+export default function TermInsuranceProviderTable() {
   const [data, setData] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     logoUrl: "",
-    cashlessGarages: "",
-    claimsSettled: "",
-    claimType: "",
     premiumStartingFrom: "",
-    insuranceTypes: [],
     keyFeatures: [],
-    carBrand: "",
-    carBrandModel: "",
-    typeOfCar: "",
-    cityCarRegistered: "",
-    carBuyedYear: "",
+    claimType: "",
+    lifeCoverAmount: "",
+    ageGroup: "",
+    gender: "",
+    tobaccoUse: false,
+    coverageRequirement: "",
   });
   const [formErrors, setFormErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const API_BASE = process.env.REACT_APP_API_URL;
   const [page, setPage] = useState(1);
+  const [filtersVisible, setFiltersVisible] = useState(false);
+  const [filters, setFilters] = useState({
+    lifeCoverAmount: "",
+    gender: "",
+    tobaccoUse: "",
+    ageGroup: "",
+    coverageRequirement: "",
+  });
   const itemsPerPage = 10;
 
-  const fetchData = async () => {
+  const fetchData = async (filters = {}) => {
     try {
-      const res = await fetch(`${API_BASE}/api/insurance-provider/all`);
+      let url = `${API_BASE}/api/term/all`;
+      if (Object.keys(filters).length) {
+        url = `${API_BASE}/api/term/filter?${new URLSearchParams(filters).toString()}`;
+      }
+      const res = await fetch(url);
       const json = await res.json();
       setData(json);
-      // Ensure page is valid after fetching data
       const totalPages = Math.ceil(json.length / itemsPerPage);
       if (page > totalPages && totalPages > 0) {
         setPage(totalPages);
@@ -51,35 +59,27 @@ export default function InsuranceProviderTable() {
   const validateForm = () => {
     const errors = {};
     if (!formData.name.trim()) errors.name = "Name is required";
-    if (!formData.cashlessGarages.trim()) errors.cashlessGarages = "Cashless Garages is required";
-    if (!formData.claimsSettled.trim()) errors.claimsSettled = "Claims Settled is required";
-    if (!formData.claimType.trim()) errors.claimType = "Claim Type is required";
     if (!formData.premiumStartingFrom || formData.premiumStartingFrom <= 0) errors.premiumStartingFrom = "Premium must be a positive number";
-    if (!formData.carBrand.trim()) errors.carBrand = "Car Brand is required";
-    if (!formData.carBrandModel.trim()) errors.carBrandModel = "Car Brand Model is required";
-    if (!formData.typeOfCar) errors.typeOfCar = "Type of Car is required";
-    if (!formData.cityCarRegistered.trim()) errors.cityCarRegistered = "City of Registration is required";
-    if (!formData.carBuyedYear || formData.carBuyedYear < 1900 || formData.carBuyedYear > 2025) {
-      errors.carBuyedYear = "Car Buyed Year must be between 1900 and 2025";
-    }
-    if (formData.insuranceTypes.length === 0) errors.insuranceTypes = "At least one insurance type is required";
+    if (!formData.claimType.trim()) errors.claimType = "Claim Type is required";
+    if (!formData.lifeCoverAmount.trim()) errors.lifeCoverAmount = "Life Cover Amount is required";
+    if (!formData.ageGroup) errors.ageGroup = "Age Group is required";
+    if (!formData.gender) errors.gender = "Gender is required";
+    if (formData.tobaccoUse === undefined || formData.tobaccoUse === null) errors.tobaccoUse = "Tobacco Use is required";
+    if (!formData.coverageRequirement) errors.coverageRequirement = "Coverage Requirement is required";
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    if (["insuranceTypes", "keyFeatures"].includes(name)) {
+    const { name, value, type, checked } = e.target;
+    if (name === "keyFeatures") {
       setFormData({ ...formData, [name]: value.split(",").map((s) => s.trim()).filter((s) => s) });
+    } else if (type === "checkbox") {
+      setFormData({ ...formData, [name]: checked });
     } else {
       setFormData({ ...formData, [name]: value });
     }
-  };
-
-  const handleInsuranceTypeChange = (e) => {
-    const options = Array.from(e.target.selectedOptions, (option) => option.value);
-    setFormData({ ...formData, insuranceTypes: options });
   };
 
   const openAddForm = () => {
@@ -87,17 +87,14 @@ export default function InsuranceProviderTable() {
     setFormData({
       name: "",
       logoUrl: "",
-      cashlessGarages: "",
-      claimsSettled: "",
-      claimType: "",
       premiumStartingFrom: "",
-      insuranceTypes: [],
       keyFeatures: [],
-      carBrand: "",
-      carBrandModel: "",
-      typeOfCar: "",
-      cityCarRegistered: "",
-      carBuyedYear: "",
+      claimType: "",
+      lifeCoverAmount: "",
+      ageGroup: "",
+      gender: "",
+      tobaccoUse: false,
+      coverageRequirement: "",
     });
     setFormErrors({});
     setErrorMessage("");
@@ -109,8 +106,8 @@ export default function InsuranceProviderTable() {
     if (!validateForm()) return;
 
     const url = editing
-      ? `${API_BASE}/api/insurance-provider/update/${editing._id}`
-      : `${API_BASE}/api/insurance-provider/create`;
+      ? `${API_BASE}/api/term/update/${editing._id}`
+      : `${API_BASE}/api/term/create`;
 
     const method = editing ? "PUT" : "POST";
 
@@ -123,7 +120,7 @@ export default function InsuranceProviderTable() {
 
       if (res.ok) {
         setShowForm(false);
-        fetchData();
+        fetchData(filters);
         setErrorMessage("");
       } else {
         const errorData = await res.json();
@@ -137,9 +134,9 @@ export default function InsuranceProviderTable() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this provider?")) {
       try {
-        const res = await fetch(`${API_BASE}/api/insurance-provider/delete/${id}`, { method: "DELETE" });
+        const res = await fetch(`${API_BASE}/api/term/delete/${id}`, { method: "DELETE" });
         if (res.ok) {
-          fetchData();
+          fetchData(filters);
           setErrorMessage("");
         } else {
           setErrorMessage("Failed to delete provider.");
@@ -155,21 +152,27 @@ export default function InsuranceProviderTable() {
     setFormData({
       name: item.name,
       logoUrl: item.logoUrl || "",
-      cashlessGarages: item.cashlessGarages,
-      claimsSettled: item.claimsSettled,
-      claimType: item.claimType,
       premiumStartingFrom: item.premiumStartingFrom,
-      insuranceTypes: item.insuranceTypes,
       keyFeatures: item.keyFeatures,
-      carBrand: item.carBrand,
-      carBrandModel: item.carBrandModel,
-      typeOfCar: item.typeOfCar,
-      cityCarRegistered: item.cityCarRegistered,
-      carBuyedYear: item.carBuyedYear,
+      claimType: item.claimType,
+      lifeCoverAmount: item.lifeCoverAmount,
+      ageGroup: item.ageGroup,
+      gender: item.gender,
+      tobaccoUse: item.tobaccoUse,
+      coverageRequirement: item.coverageRequirement,
     });
     setFormErrors({});
     setErrorMessage("");
     setShowForm(true);
+  };
+
+  const handleFilterChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+  };
+
+  const applyFilters = () => {
+    fetchData(filters);
+    setFiltersVisible(false);
   };
 
   const paginatedData = data.slice((page - 1) * itemsPerPage, page * itemsPerPage);
@@ -212,23 +215,40 @@ export default function InsuranceProviderTable() {
         style={{ backgroundColor: "#f8f9fa", padding: "10px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
       >
         <h2 className="fw-bold" style={{ color: "#2c3e50", fontSize: "1.5rem", margin: 0 }}>
-          Insurance Providers
+          Term Insurance Providers
         </h2>
         {!showForm && (
-          <Button
-            variant="primary"
-            onClick={openAddForm}
-            style={{
-              borderRadius: "6px",
-              padding: "8px 16px",
-              fontSize: "0.9rem",
-              transition: "transform 0.2s ease",
-            }}
-            onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
-            onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
-          >
-            + Add Provider
-          </Button>
+          <div>
+            <Button
+              variant="info"
+              onClick={() => setFiltersVisible(!filtersVisible)}
+              style={{
+                borderRadius: "6px",
+                padding: "8px 16px",
+                fontSize: "0.9rem",
+                marginRight: "8px",
+                transition: "transform 0.2s ease",
+              }}
+              onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
+              onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
+            >
+              {filtersVisible ? "Hide Filters" : "Show Filters"}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={openAddForm}
+              style={{
+                borderRadius: "6px",
+                padding: "8px 16px",
+                fontSize: "0.9rem",
+                transition: "transform 0.2s ease",
+              }}
+              onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
+              onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
+            >
+              + Add Provider
+            </Button>
+          </div>
         )}
       </div>
 
@@ -236,6 +256,104 @@ export default function InsuranceProviderTable() {
         <Alert variant="danger" style={{ marginBottom: "15px", borderRadius: "6px", fontSize: "0.9rem" }}>
           {errorMessage}
         </Alert>
+      )}
+
+      {filtersVisible && (
+        <div
+          style={{
+            backgroundColor: "#fff",
+            padding: "15px",
+            borderRadius: "8px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            marginBottom: "15px",
+          }}
+        >
+          <h5 style={{ color: "#2c3e50", fontSize: "1.1rem", marginBottom: "15px" }}>Filters</h5>
+          <div className="row">
+            <div className="col-md-2">
+              <Form.Group className="mb-2">
+                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Life Cover Amount</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="lifeCoverAmount"
+                  placeholder="e.g., 1Cr"
+                  value={filters.lifeCoverAmount}
+                  onChange={handleFilterChange}
+                  style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                />
+              </Form.Group>
+            </div>
+            <div className="col-md-2">
+              <Form.Group className="mb-2">
+                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Gender</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="gender"
+                  placeholder="e.g., male"
+                  value={filters.gender}
+                  onChange={handleFilterChange}
+                  style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                />
+              </Form.Group>
+            </div>
+            <div className="col-md-2">
+              <Form.Group className="mb-2">
+                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Tobacco Use</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="tobaccoUse"
+                  placeholder="true/false"
+                  value={filters.tobaccoUse}
+                  onChange={handleFilterChange}
+                  style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                />
+              </Form.Group>
+            </div>
+            <div className="col-md-2">
+              <Form.Group className="mb-2">
+                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Age Group</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="ageGroup"
+                  placeholder="e.g., <30"
+                  value={filters.ageGroup}
+                  onChange={handleFilterChange}
+                  style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                />
+              </Form.Group>
+            </div>
+            <div className="col-md-2">
+              <Form.Group className="mb-2">
+                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Coverage Requirement</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="coverageRequirement"
+                  placeholder="e.g., 1Cr"
+                  value={filters.coverageRequirement}
+                  onChange={handleFilterChange}
+                  style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                />
+              </Form.Group>
+            </div>
+            <div className="col-md-2 d-flex align-items-end">
+              <Button
+                variant="success"
+                onClick={applyFilters}
+                style={{
+                  borderRadius: "6px",
+                  padding: "6px 12px",
+                  fontSize: "0.85rem",
+                  width: "100%",
+                  transition: "transform 0.2s ease",
+                }}
+                onMouseEnter={(e) => (e.target.style.transform = "scale(1.05)")}
+                onMouseLeave={(e) => (e.target.style.transform = "scale(1)")}
+              >
+                Apply Filters
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
       {showForm && (
@@ -249,7 +367,7 @@ export default function InsuranceProviderTable() {
           }}
         >
           <h3 style={{ color: "#2c3e50", fontWeight: "600", marginBottom: "15px", fontSize: "1.2rem" }}>
-            {editing ? "Edit Insurance Provider" : "Add Insurance Provider"}
+            {editing ? "Edit Term Insurance Provider" : "Add Term Insurance Provider"}
           </h3>
           <Form onSubmit={handleSubmit}>
             <div className="row">
@@ -283,31 +401,30 @@ export default function InsuranceProviderTable() {
 
             <div className="row">
               <div className="col-md-6">
-                <Form.Group controlId="cashlessGarages" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Cashless Garages</Form.Label>
+                <Form.Group controlId="premiumStartingFrom" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Premium Starting From (₹)</Form.Label>
                   <Form.Control
-                    type="text"
-                    name="cashlessGarages"
-                    value={formData.cashlessGarages}
+                    type="number"
+                    name="premiumStartingFrom"
+                    value={formData.premiumStartingFrom}
                     onChange={handleInputChange}
-                    isInvalid={!!formErrors.cashlessGarages}
+                    isInvalid={!!formErrors.premiumStartingFrom}
                     style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
                   />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.cashlessGarages}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.premiumStartingFrom}</Form.Control.Feedback>
                 </Form.Group>
               </div>
               <div className="col-md-6">
-                <Form.Group controlId="claimsSettled" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Claims Settled</Form.Label>
+                <Form.Group controlId="keyFeatures" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Key Features (Comma-separated)</Form.Label>
                   <Form.Control
                     type="text"
-                    name="claimsSettled"
-                    value={formData.claimsSettled}
+                    name="keyFeatures"
+                    value={formData.keyFeatures.join(", ")}
                     onChange={handleInputChange}
-                    isInvalid={!!formErrors.claimsSettled}
+                    placeholder="e.g., Tax Benefits, High Coverage"
                     style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
                   />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.claimsSettled}</Form.Control.Feedback>
                 </Form.Group>
               </div>
             </div>
@@ -328,136 +445,97 @@ export default function InsuranceProviderTable() {
                 </Form.Group>
               </div>
               <div className="col-md-6">
-                <Form.Group controlId="premiumStartingFrom" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Premium Starting From (₹)</Form.Label>
+                <Form.Group controlId="lifeCoverAmount" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Life Cover Amount</Form.Label>
                   <Form.Control
-                    type="number"
-                    name="premiumStartingFrom"
-                    value={formData.premiumStartingFrom}
+                    type="text"
+                    name="lifeCoverAmount"
+                    value={formData.lifeCoverAmount}
                     onChange={handleInputChange}
-                    isInvalid={!!formErrors.premiumStartingFrom}
+                    isInvalid={!!formErrors.lifeCoverAmount}
                     style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
                   />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.premiumStartingFrom}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.lifeCoverAmount}</Form.Control.Feedback>
                 </Form.Group>
               </div>
             </div>
 
             <div className="row">
               <div className="col-md-6">
-                <Form.Group controlId="insuranceTypes" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Insurance Types</Form.Label>
+                <Form.Group controlId="ageGroup" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Age Group</Form.Label>
                   <Form.Select
-                    multiple
-                    name="insuranceTypes"
-                    value={formData.insuranceTypes}
-                    onChange={handleInsuranceTypeChange}
-                    isInvalid={!!formErrors.insuranceTypes}
-                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem", height: "80px" }}
-                  >
-                    <option value="Comprehensive">Comprehensive</option>
-                    <option value="Third Party">Third Party</option>
-                    <option value="Own Damage">Own Damage</option>
-                  </Form.Select>
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.insuranceTypes}</Form.Control.Feedback>
-                </Form.Group>
-              </div>
-              <div className="col-md-6">
-                <Form.Group controlId="keyFeatures" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Key Features (Comma-separated)</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="keyFeatures"
-                    value={formData.keyFeatures.join(", ")}
+                    name="ageGroup"
+                    value={formData.ageGroup}
                     onChange={handleInputChange}
-                    placeholder="e.g., Roadside Assistance, Zero Depreciation"
-                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
-                  />
-                </Form.Group>
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col-md-6">
-                <Form.Group controlId="carBrand" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Car Brand</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="carBrand"
-                    value={formData.carBrand}
-                    onChange={handleInputChange}
-                    isInvalid={!!formErrors.carBrand}
-                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
-                  />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.carBrand}</Form.Control.Feedback>
-                </Form.Group>
-              </div>
-              <div className="col-md-6">
-                <Form.Group controlId="carBrandModel" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Car Brand Model</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="carBrandModel"
-                    value={formData.carBrandModel}
-                    onChange={handleInputChange}
-                    isInvalid={!!formErrors.carBrandModel}
-                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
-                  />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.carBrandModel}</Form.Control.Feedback>
-                </Form.Group>
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col-md-6">
-                <Form.Group controlId="typeOfCar" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Type of Car</Form.Label>
-                  <Form.Select
-                    name="typeOfCar"
-                    value={formData.typeOfCar}
-                    onChange={handleInputChange}
-                    isInvalid={!!formErrors.typeOfCar}
+                    isInvalid={!!formErrors.ageGroup}
                     style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
                   >
-                    <option value="">Select Type</option>
-                    <option value="Petrol">Petrol</option>
-                    <option value="Diesel">Diesel</option>
-                    <option value="CNG">CNG</option>
+                    <option value="">Select</option>
+                    <option value="<10">Under 10</option>
+                    <option value="<20">Under 20</option>
+                    <option value="<30">Under 30</option>
+                    <option value="<40">Under 40</option>
+                    <option value="<50">Under 50</option>
+                    <option value="<60">Under 60</option>
+                    <option value="<70">Under 70</option>
+                    <option value="<80">Under 80</option>
                   </Form.Select>
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.typeOfCar}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.ageGroup}</Form.Control.Feedback>
                 </Form.Group>
               </div>
               <div className="col-md-6">
-                <Form.Group controlId="cityCarRegistered" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>City Car Registered</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="cityCarRegistered"
-                    value={formData.cityCarRegistered}
+                <Form.Group controlId="gender" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Gender</Form.Label>
+                  <Form.Select
+                    name="gender"
+                    value={formData.gender}
                     onChange={handleInputChange}
-                    isInvalid={!!formErrors.cityCarRegistered}
+                    isInvalid={!!formErrors.gender}
                     style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
-                  />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.cityCarRegistered}</Form.Control.Feedback>
+                  >
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.gender}</Form.Control.Feedback>
                 </Form.Group>
               </div>
             </div>
 
             <div className="row">
               <div className="col-md-6">
-                <Form.Group controlId="carBuyedYear" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Car Buyed Year</Form.Label>
-                  <Form.Control
-                    type="number"
-                    name="carBuyedYear"
-                    value={formData.carBuyedYear}
+                <Form.Group controlId="tobaccoUse" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Tobacco Use</Form.Label>
+                  <Form.Check
+                    type="checkbox"
+                    name="tobaccoUse"
+                    checked={formData.tobaccoUse}
                     onChange={handleInputChange}
-                    isInvalid={!!formErrors.carBuyedYear}
-                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
-                    min="1900"
-                    max="2025"
+                    isInvalid={!!formErrors.tobaccoUse}
+                    style={{ fontSize: "0.85rem" }}
                   />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.carBuyedYear}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.tobaccoUse}</Form.Control.Feedback>
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group controlId="coverageRequirement" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Coverage Requirement</Form.Label>
+                  <Form.Select
+                    name="coverageRequirement"
+                    value={formData.coverageRequirement}
+                    onChange={handleInputChange}
+                    isInvalid={!!formErrors.coverageRequirement}
+                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                  >
+                    <option value="">Select</option>
+                    <option value="50L">50L</option>
+                    <option value="1Cr">1Cr</option>
+                    <option value="1.5Cr">1.5Cr</option>
+                    <option value="2Cr">2Cr</option>
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.coverageRequirement}</Form.Control.Feedback>
                 </Form.Group>
               </div>
             </div>
@@ -495,17 +573,14 @@ export default function InsuranceProviderTable() {
                 <tr>
                   <th style={{ padding: "8px", minWidth: "60px" }}>Logo</th>
                   <th style={{ padding: "8px", minWidth: "80px" }}>Name</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>Cashless Garages</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>Claims Settled</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>Claim Type</th>
                   <th style={{ padding: "8px", minWidth: "80px" }}>Premium (₹)</th>
-                  <th style={{ padding: "8px", minWidth: "100px" }}>Insurance Types</th>
                   <th style={{ padding: "8px", minWidth: "100px" }}>Key Features</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>Car Brand</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>Car Model</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>Type of Car</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>City Registered</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>Car Buyed Year</th>
+                  <th style={{ padding: "8px", minWidth: "80px" }}>Claim Type</th>
+                  <th style={{ padding: "8px", minWidth: "80px" }}>Life Cover</th>
+                  <th style={{ padding: "8px", minWidth: "80px" }}>Age Group</th>
+                  <th style={{ padding: "8px", minWidth: "80px" }}>Gender</th>
+                  <th style={{ padding: "8px", minWidth: "80px" }}>Tobacco Use</th>
+                  <th style={{ padding: "8px", minWidth: "80px" }}>Coverage Req.</th>
                   <th style={{ padding: "8px", minWidth: "120px" }}>Actions</th>
                 </tr>
               </thead>
@@ -532,17 +607,7 @@ export default function InsuranceProviderTable() {
                       )}
                     </td>
                     <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.cashlessGarages}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.claimsSettled}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.claimType}</td>
                     <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>₹{item.premiumStartingFrom}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {item.insuranceTypes.map((type, idx) => (
-                        <Badge key={idx} bg="primary" style={{ marginRight: "4px", padding: "3px 6px", fontSize: "0.65rem" }}>
-                          {type}
-                        </Badge>
-                      ))}
-                    </td>
                     <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {item.keyFeatures.map((feature, idx) => (
                         <Badge key={idx} bg="secondary" style={{ marginRight: "4px", padding: "3px 6px", fontSize: "0.65rem" }}>
@@ -550,11 +615,12 @@ export default function InsuranceProviderTable() {
                         </Badge>
                       ))}
                     </td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.carBrand}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.carBrandModel}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.typeOfCar}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.cityCarRegistered}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.carBuyedYear}</td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.claimType}</td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.lifeCoverAmount}</td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.ageGroup}</td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.gender}</td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.tobaccoUse ? "Yes" : "No"}</td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.coverageRequirement}</td>
                     <td style={{ verticalAlign: "middle", textAlign: "center", padding: "4px", whiteSpace: "nowrap" }}>
                       <Button
                         variant="outline-success"

@@ -7,14 +7,16 @@ import Advisor from "../screens/advisor";
 import Dasboard from "./AdminDashboard";
 import { Dropdown,  } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-
+import HealthProvider from "../screens/healthProvider";
+import GuarnteeProvider from "../screens/guarntee";
 // Dummy page components for demonstration
 
 const InsurancePage = () => (
     <div style={{ padding: '20px' }}>
-        <Dasboard/>
-        <h1>Insurance</h1>
-        <p>This is the Insurance page content.</p>
+       
+        <h1>Health Insurance</h1>
+     
+         <HealthProvider/>
     </div>
 );
 
@@ -36,6 +38,7 @@ const LifeInsurancePage = () => (
     <div style={{ padding: '20px' }}>
         <h1>Life Insurance</h1>
         <p>This is the Life Insurance page content.</p>
+        <GuarnteeProvider/>
     </div>
 );
 
@@ -204,7 +207,7 @@ setUser(null);
 
                         <li style={{ margin: '0 10px' }}>
                             <a
-                                title="Life Insurance"
+                                title="Guanteed Return"
                                 href="#"
                                 onClick={() => handleNavigation('life-insurance')}
                                 style={{ backgroundColor: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0, textDecoration: 'none', color: '#333' }}
@@ -217,7 +220,7 @@ setUser(null);
                                     src="https://static.insurancedekho.com/pwa/img/life_insurance.svg"
                                     style={{ marginRight: '10px' }}
                                 />
-                                Life Insurance
+                               Guanteed Return
                             </a>
                         </li>
 

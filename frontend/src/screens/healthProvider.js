@@ -2,43 +2,44 @@ import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Table, Button, Form, Alert, Badge, Image } from "react-bootstrap";
 
-export default function BikeInsuranceProviderTable() {
+export default function HealthInsuranceProviderTable() {
   const [data, setData] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     logoUrl: "",
-    cashlessGarages: "",
-    claimsSettled: "",
-    claimType: "",
     premiumStartingFrom: "",
-    insuranceTypes: [],
     keyFeatures: [],
-    bikeBrandName: "",
-    bikeModel: "",
-    bikeOwnedYear: "",
-    bikeRegisteredCity: "",
+    claimType: "",
+    coverAmount: "",
+    areaPincode: "",
+    insuranceFor: "",
+    gender: "",
+    members: [{ relationship: "", age: "", count: 1 }],
+    knownDiseases: [],
+    otherDisease: "",
   });
   const [formErrors, setFormErrors] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const API_BASE = process.env.REACT_APP_API_URL;
   const [page, setPage] = useState(1);
-  const itemsPerPage = 10;
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [filters, setFilters] = useState({
-    type: "",
-    brand: "",
-    model: "",
-    year: "",
-    city: "",
+    insuranceFor: "",
+    areaPincode: "",
+    coverAmount: "",
+    gender: "",
+    knownDiseases: "",
+    members: "",
   });
+  const itemsPerPage = 10;
 
   const fetchData = async (filters = {}) => {
     try {
-      let url = `${API_BASE}/api/bike-insurance-provider/all`;
+      let url = `${API_BASE}/api/health/all`;
       if (Object.keys(filters).length) {
-        url = `${API_BASE}/api/bike-insurance-provider/filter?${new URLSearchParams(filters).toString()}`;
+        url = `${API_BASE}/api/health/filter?${new URLSearchParams(filters).toString()}`;
       }
       const res = await fetch(url);
       const json = await res.json();
@@ -61,17 +62,24 @@ export default function BikeInsuranceProviderTable() {
   const validateForm = () => {
     const errors = {};
     if (!formData.name.trim()) errors.name = "Name is required";
-    if (!formData.cashlessGarages.trim()) errors.cashlessGarages = "Cashless Garages is required";
-    if (!formData.claimsSettled.trim()) errors.claimsSettled = "Claims Settled is required";
-    if (!formData.claimType.trim()) errors.claimType = "Claim Type is required";
     if (!formData.premiumStartingFrom || formData.premiumStartingFrom <= 0) errors.premiumStartingFrom = "Premium must be a positive number";
-    if (!formData.bikeBrandName.trim()) errors.bikeBrandName = "Bike Brand Name is required";
-    if (!formData.bikeModel.trim()) errors.bikeModel = "Bike Model is required";
-    if (!formData.bikeOwnedYear || formData.bikeOwnedYear < 1900 || formData.bikeOwnedYear > 2025) {
-      errors.bikeOwnedYear = "Bike Owned Year must be between 1900 and 2025";
+    if (!formData.claimType.trim()) errors.claimType = "Claim Type is required";
+    if (!formData.coverAmount.trim()) errors.coverAmount = "Cover Amount is required";
+    if (!formData.areaPincode.trim()) errors.areaPincode = "Area Pincode is required";
+    if (!formData.insuranceFor) errors.insuranceFor = "Insurance For is required";
+    if (!formData.gender) errors.gender = "Gender is required";
+    if (formData.members.length === 0) {
+      errors.members = "At least one member is required";
+    } else {
+      formData.members.forEach((member, idx) => {
+        if (!member.relationship) errors[`members[${idx}].relationship`] = "Relationship is required";
+        if (!member.age || member.age <= 0) errors[`members[${idx}].age`] = "Age must be a positive number";
+        if (member.count < 1) errors[`members[${idx}].count`] = "Count must be at least 1";
+      });
     }
-    if (!formData.bikeRegisteredCity.trim()) errors.bikeRegisteredCity = "Bike Registered City is required";
-    if (formData.insuranceTypes.length === 0) errors.insuranceTypes = "At least one insurance type is required";
+    if (formData.knownDiseases.includes("Other") && !formData.otherDisease.trim()) {
+      errors.otherDisease = "Other disease description is required";
+    }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -79,16 +87,34 @@ export default function BikeInsuranceProviderTable() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (["insuranceTypes", "keyFeatures"].includes(name)) {
+    if (name === "keyFeatures") {
       setFormData({ ...formData, [name]: value.split(",").map((s) => s.trim()).filter((s) => s) });
     } else {
       setFormData({ ...formData, [name]: value });
     }
   };
 
-  const handleInsuranceTypeChange = (e) => {
+  const handleKnownDiseasesChange = (e) => {
     const options = Array.from(e.target.selectedOptions, (option) => option.value);
-    setFormData({ ...formData, insuranceTypes: options });
+    setFormData({ ...formData, knownDiseases: options });
+  };
+
+  const handleMemberChange = (index, field, value) => {
+    const updatedMembers = [...formData.members];
+    updatedMembers[index] = { ...updatedMembers[index], [field]: value };
+    setFormData({ ...formData, members: updatedMembers });
+  };
+
+  const addMember = () => {
+    setFormData({
+      ...formData,
+      members: [...formData.members, { relationship: "", age: "", count: 1 }],
+    });
+  };
+
+  const removeMember = (index) => {
+    const updatedMembers = formData.members.filter((_, i) => i !== index);
+    setFormData({ ...formData, members: updatedMembers });
   };
 
   const openAddForm = () => {
@@ -96,16 +122,16 @@ export default function BikeInsuranceProviderTable() {
     setFormData({
       name: "",
       logoUrl: "",
-      cashlessGarages: "",
-      claimsSettled: "",
-      claimType: "",
       premiumStartingFrom: "",
-      insuranceTypes: [],
       keyFeatures: [],
-      bikeBrandName: "",
-      bikeModel: "",
-      bikeOwnedYear: "",
-      bikeRegisteredCity: "",
+      claimType: "",
+      coverAmount: "",
+      areaPincode: "",
+      insuranceFor: "",
+      gender: "",
+      members: [{ relationship: "", age: "", count: 1 }],
+      knownDiseases: [],
+      otherDisease: "",
     });
     setFormErrors({});
     setErrorMessage("");
@@ -117,8 +143,8 @@ export default function BikeInsuranceProviderTable() {
     if (!validateForm()) return;
 
     const url = editing
-      ? `${API_BASE}/api/bike-insurance-provider/update/${editing._id}`
-      : `${API_BASE}/api/bike-insurance-provider/create`;
+      ? `${API_BASE}/api/health/update/${editing._id}`
+      : `${API_BASE}/api/health/create`;
 
     const method = editing ? "PUT" : "POST";
 
@@ -145,7 +171,7 @@ export default function BikeInsuranceProviderTable() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this provider?")) {
       try {
-        const res = await fetch(`${API_BASE}/api/bike-insurance-provider/delete/${id}`, { method: "DELETE" });
+        const res = await fetch(`${API_BASE}/api/health/delete/${id}`, { method: "DELETE" });
         if (res.ok) {
           fetchData(filters);
           setErrorMessage("");
@@ -163,16 +189,16 @@ export default function BikeInsuranceProviderTable() {
     setFormData({
       name: item.name,
       logoUrl: item.logoUrl || "",
-      cashlessGarages: item.cashlessGarages,
-      claimsSettled: item.claimsSettled,
-      claimType: item.claimType,
       premiumStartingFrom: item.premiumStartingFrom,
-      insuranceTypes: item.insuranceTypes,
       keyFeatures: item.keyFeatures,
-      bikeBrandName: item.bikeBrandName,
-      bikeModel: item.bikeModel,
-      bikeOwnedYear: item.bikeOwnedYear,
-      bikeRegisteredCity: item.bikeRegisteredCity,
+      claimType: item.claimType,
+      coverAmount: item.coverAmount,
+      areaPincode: item.areaPincode,
+      insuranceFor: item.insuranceFor,
+      gender: item.gender,
+      members: item.members.length > 0 ? item.members : [{ relationship: "", age: "", count: 1 }],
+      knownDiseases: item.knownDiseases,
+      otherDisease: item.otherDisease || "",
     });
     setFormErrors({});
     setErrorMessage("");
@@ -184,7 +210,23 @@ export default function BikeInsuranceProviderTable() {
   };
 
   const applyFilters = () => {
-    fetchData(filters);
+    const formattedFilters = { ...filters };
+    if (filters.knownDiseases) {
+      formattedFilters.knownDiseases = JSON.stringify(filters.knownDiseases.split(",").map((d) => d.trim()));
+    }
+    if (filters.members) {
+      try {
+        const membersArray = filters.members.split(";").map((m) => {
+          const [relationship, age, count] = m.split(",");
+          return { relationship: relationship.trim(), age: parseInt(age), count: parseInt(count) || 1 };
+        });
+        formattedFilters.members = JSON.stringify(membersArray);
+      } catch (err) {
+        setErrorMessage("Invalid members filter format. Use: relationship,age,count;relationship,age,count");
+        return;
+      }
+    }
+    fetchData(formattedFilters);
     setFiltersVisible(false);
   };
 
@@ -228,7 +270,7 @@ export default function BikeInsuranceProviderTable() {
         style={{ backgroundColor: "#f8f9fa", padding: "10px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
       >
         <h2 className="fw-bold" style={{ color: "#2c3e50", fontSize: "1.5rem", margin: 0 }}>
-          Bike Insurance Providers
+          Health Insurance Providers
         </h2>
         {!showForm && (
           <div>
@@ -285,12 +327,12 @@ export default function BikeInsuranceProviderTable() {
           <div className="row">
             <div className="col-md-2">
               <Form.Group className="mb-2">
-                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Insurance Type</Form.Label>
+                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Insurance For</Form.Label>
                 <Form.Control
                   type="text"
-                  name="type"
-                  placeholder="e.g., Comprehensive"
-                  value={filters.type}
+                  name="insuranceFor"
+                  placeholder="e.g., Family"
+                  value={filters.insuranceFor}
                   onChange={handleFilterChange}
                   style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
                 />
@@ -298,12 +340,12 @@ export default function BikeInsuranceProviderTable() {
             </div>
             <div className="col-md-2">
               <Form.Group className="mb-2">
-                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Bike Brand</Form.Label>
+                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Area Pincode</Form.Label>
                 <Form.Control
                   type="text"
-                  name="brand"
-                  placeholder="e.g., Honda"
-                  value={filters.brand}
+                  name="areaPincode"
+                  placeholder="e.g., 400001"
+                  value={filters.areaPincode}
                   onChange={handleFilterChange}
                   style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
                 />
@@ -311,12 +353,12 @@ export default function BikeInsuranceProviderTable() {
             </div>
             <div className="col-md-2">
               <Form.Group className="mb-2">
-                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Bike Model</Form.Label>
+                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Cover Amount</Form.Label>
                 <Form.Control
                   type="text"
-                  name="model"
-                  placeholder="e.g., CB Shine"
-                  value={filters.model}
+                  name="coverAmount"
+                  placeholder="e.g., 5L"
+                  value={filters.coverAmount}
                   onChange={handleFilterChange}
                   style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
                 />
@@ -324,12 +366,12 @@ export default function BikeInsuranceProviderTable() {
             </div>
             <div className="col-md-2">
               <Form.Group className="mb-2">
-                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Bike Year</Form.Label>
+                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Gender</Form.Label>
                 <Form.Control
-                  type="number"
-                  name="year"
-                  placeholder="e.g., 2020"
-                  value={filters.year}
+                  type="text"
+                  name="gender"
+                  placeholder="e.g., Male"
+                  value={filters.gender}
                   onChange={handleFilterChange}
                   style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
                 />
@@ -337,12 +379,25 @@ export default function BikeInsuranceProviderTable() {
             </div>
             <div className="col-md-2">
               <Form.Group className="mb-2">
-                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>City</Form.Label>
+                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Known Diseases</Form.Label>
                 <Form.Control
                   type="text"
-                  name="city"
-                  placeholder="e.g., Mumbai"
-                  value={filters.city}
+                  name="knownDiseases"
+                  placeholder="e.g., Diabetes,BP/Hypertension"
+                  value={filters.knownDiseases}
+                  onChange={handleFilterChange}
+                  style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                />
+              </Form.Group>
+            </div>
+            <div className="col-md-2">
+              <Form.Group className="mb-2">
+                <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Members</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="members"
+                  placeholder="e.g., You,30,1;Spouse,28,1"
+                  value={filters.members}
                   onChange={handleFilterChange}
                   style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
                 />
@@ -380,7 +435,7 @@ export default function BikeInsuranceProviderTable() {
           }}
         >
           <h3 style={{ color: "#2c3e50", fontWeight: "600", marginBottom: "15px", fontSize: "1.2rem" }}>
-            {editing ? "Edit Bike Insurance Provider" : "Add Bike Insurance Provider"}
+            {editing ? "Edit Health Insurance Provider" : "Add Health Insurance Provider"}
           </h3>
           <Form onSubmit={handleSubmit}>
             <div className="row">
@@ -414,31 +469,30 @@ export default function BikeInsuranceProviderTable() {
 
             <div className="row">
               <div className="col-md-6">
-                <Form.Group controlId="cashlessGarages" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Cashless Garages</Form.Label>
+                <Form.Group controlId="premiumStartingFrom" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Premium Starting From (₹)</Form.Label>
                   <Form.Control
-                    type="text"
-                    name="cashlessGarages"
-                    value={formData.cashlessGarages}
+                    type="number"
+                    name="premiumStartingFrom"
+                    value={formData.premiumStartingFrom}
                     onChange={handleInputChange}
-                    isInvalid={!!formErrors.cashlessGarages}
+                    isInvalid={!!formErrors.premiumStartingFrom}
                     style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
                   />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.cashlessGarages}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.premiumStartingFrom}</Form.Control.Feedback>
                 </Form.Group>
               </div>
               <div className="col-md-6">
-                <Form.Group controlId="claimsSettled" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Claims Settled</Form.Label>
+                <Form.Group controlId="keyFeatures" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Key Features (Comma-separated)</Form.Label>
                   <Form.Control
                     type="text"
-                    name="claimsSettled"
-                    value={formData.claimsSettled}
+                    name="keyFeatures"
+                    value={formData.keyFeatures.join(", ")}
                     onChange={handleInputChange}
-                    isInvalid={!!formErrors.claimsSettled}
+                    placeholder="e.g., Cashless Treatment, No Claim Bonus"
                     style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
                   />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.claimsSettled}</Form.Control.Feedback>
                 </Form.Group>
               </div>
             </div>
@@ -459,117 +513,195 @@ export default function BikeInsuranceProviderTable() {
                 </Form.Group>
               </div>
               <div className="col-md-6">
-                <Form.Group controlId="premiumStartingFrom" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Premium Starting From (₹)</Form.Label>
+                <Form.Group controlId="coverAmount" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Cover Amount</Form.Label>
                   <Form.Control
-                    type="number"
-                    name="premiumStartingFrom"
-                    value={formData.premiumStartingFrom}
+                    type="text"
+                    name="coverAmount"
+                    value={formData.coverAmount}
                     onChange={handleInputChange}
-                    isInvalid={!!formErrors.premiumStartingFrom}
+                    isInvalid={!!formErrors.coverAmount}
                     style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
                   />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.premiumStartingFrom}</Form.Control.Feedback>
+                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.coverAmount}</Form.Control.Feedback>
                 </Form.Group>
               </div>
             </div>
 
             <div className="row">
               <div className="col-md-6">
-                <Form.Group controlId="insuranceTypes" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Insurance Types</Form.Label>
+                <Form.Group controlId="areaPincode" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Area Pincode</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="areaPincode"
+                    value={formData.areaPincode}
+                    onChange={handleInputChange}
+                    isInvalid={!!formErrors.areaPincode}
+                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                  />
+                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.areaPincode}</Form.Control.Feedback>
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group controlId="insuranceFor" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Insurance For</Form.Label>
+                  <Form.Select
+                    name="insuranceFor"
+                    value={formData.insuranceFor}
+                    onChange={handleInputChange}
+                    isInvalid={!!formErrors.insuranceFor}
+                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                  >
+                    <option value="">Select</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Couple">Couple</option>
+                    <option value="Family">Family</option>
+                    <option value="Father">Father</option>
+                    <option value="Mother">Mother</option>
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.insuranceFor}</Form.Control.Feedback>
+                </Form.Group>
+              </div>
+            </div>
+
+            <div className="row">
+              <div className="col-md-6">
+                <Form.Group controlId="gender" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Gender</Form.Label>
+                  <Form.Select
+                    name="gender"
+                    value={formData.gender}
+                    onChange={handleInputChange}
+                    isInvalid={!!formErrors.gender}
+                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                  >
+                    <option value="">Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </Form.Select>
+                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.gender}</Form.Control.Feedback>
+                </Form.Group>
+              </div>
+              <div className="col-md-6">
+                <Form.Group controlId="knownDiseases" className="mb-2">
+                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Known Diseases</Form.Label>
                   <Form.Select
                     multiple
-                    name="insuranceTypes"
-                    value={formData.insuranceTypes}
-                    onChange={handleInsuranceTypeChange}
-                    isInvalid={!!formErrors.insuranceTypes}
+                    name="knownDiseases"
+                    value={formData.knownDiseases}
+                    onChange={handleKnownDiseasesChange}
                     style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem", height: "80px" }}
                   >
-                    <option value="Comprehensive">Comprehensive</option>
-                    <option value="Third Party">Third Party</option>
-                    <option value="Own Damage">Own Damage</option>
+                    <option value="No existing disease">No existing disease</option>
+                    <option value="Diabetes">Diabetes</option>
+                    <option value="BP/Hypertension">BP/Hypertension</option>
+                    <option value="Heart Disease">Heart Disease</option>
+                    <option value="Asthma">Asthma</option>
+                    <option value="Thyroid Disorder">Thyroid Disorder</option>
+                    <option value="Other">Other</option>
                   </Form.Select>
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.insuranceTypes}</Form.Control.Feedback>
-                </Form.Group>
-              </div>
-              <div className="col-md-6">
-                <Form.Group controlId="keyFeatures" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Key Features (Comma-separated)</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="keyFeatures"
-                    value={formData.keyFeatures.join(", ")}
-                    onChange={handleInputChange}
-                    placeholder="e.g., Roadside Assistance, Zero Depreciation"
-                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
-                  />
                 </Form.Group>
               </div>
             </div>
 
-            <div className="row">
-              <div className="col-md-6">
-                <Form.Group controlId="bikeBrandName" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Bike Brand Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="bikeBrandName"
-                    value={formData.bikeBrandName}
-                    onChange={handleInputChange}
-                    isInvalid={!!formErrors.bikeBrandName}
-                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
-                  />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.bikeBrandName}</Form.Control.Feedback>
-                </Form.Group>
+            {formData.knownDiseases.includes("Other") && (
+              <div className="row">
+                <div className="col-md-6">
+                  <Form.Group controlId="otherDisease" className="mb-2">
+                    <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Other Disease</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="otherDisease"
+                      value={formData.otherDisease}
+                      onChange={handleInputChange}
+                      isInvalid={!!formErrors.otherDisease}
+                      style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                    />
+                    <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.otherDisease}</Form.Control.Feedback>
+                  </Form.Group>
+                </div>
               </div>
-              <div className="col-md-6">
-                <Form.Group controlId="bikeModel" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Bike Model</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="bikeModel"
-                    value={formData.bikeModel}
-                    onChange={handleInputChange}
-                    isInvalid={!!formErrors.bikeModel}
-                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
-                  />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.bikeModel}</Form.Control.Feedback>
-                </Form.Group>
-              </div>
-            </div>
+            )}
 
-            <div className="row">
-              <div className="col-md-6">
-                <Form.Group controlId="bikeOwnedYear" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Bike Owned Year</Form.Label>
-                  <Form.Control
-                    type="number"
-                    name="bikeOwnedYear"
-                    value={formData.bikeOwnedYear}
-                    onChange={handleInputChange}
-                    isInvalid={!!formErrors.bikeOwnedYear}
-                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
-                    min="1900"
-                    max="2025"
-                  />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.bikeOwnedYear}</Form.Control.Feedback>
-                </Form.Group>
-              </div>
-              <div className="col-md-6">
-                <Form.Group controlId="bikeRegisteredCity" className="mb-2">
-                  <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Bike Registered City</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="bikeRegisteredCity"
-                    value={formData.bikeRegisteredCity}
-                    onChange={handleInputChange}
-                    isInvalid={!!formErrors.bikeRegisteredCity}
-                    style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
-                  />
-                  <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>{formErrors.bikeRegisteredCity}</Form.Control.Feedback>
-                </Form.Group>
-              </div>
+            <div className="mb-3">
+              <Form.Label style={{ color: "#2c3e50", fontWeight: "500", fontSize: "0.85rem" }}>Members</Form.Label>
+              {formData.members.map((member, index) => (
+                <div key={index} className="row mb-2">
+                  <div className="col-md-4">
+                    <Form.Group>
+                      <Form.Label style={{ fontSize: "0.8rem" }}>Relationship</Form.Label>
+                      <Form.Select
+                        value={member.relationship}
+                        onChange={(e) => handleMemberChange(index, "relationship", e.target.value)}
+                        isInvalid={!!formErrors[`members[${index}].relationship`]}
+                        style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                      >
+                        <option value="">Select</option>
+                        <option value="You">You</option>
+                        <option value="Spouse">Spouse</option>
+                        <option value="Daughter">Daughter</option>
+                        <option value="Son">Son</option>
+                        <option value="Father">Father</option>
+                        <option value="Mother">Mother</option>
+                      </Form.Select>
+                      <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>
+                        {formErrors[`members[${index}].relationship`]}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </div>
+                  <div className="col-md-3">
+                    <Form.Group>
+                      <Form.Label style={{ fontSize: "0.8rem" }}>Age</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={member.age}
+                        onChange={(e) => handleMemberChange(index, "age", e.target.value)}
+                        isInvalid={!!formErrors[`members[${index}].age`]}
+                        style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                      />
+                      <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>
+                        {formErrors[`members[${index}].age`]}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </div>
+                  <div className="col-md-3">
+                    <Form.Group>
+                      <Form.Label style={{ fontSize: "0.8rem" }}>Count</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={member.count}
+                        onChange={(e) => handleMemberChange(index, "count", parseInt(e.target.value))}
+                        isInvalid={!!formErrors[`members[${index}].count`]}
+                        style={{ borderRadius: "6px", padding: "6px", fontSize: "0.85rem" }}
+                        min="1"
+                      />
+                      <Form.Control.Feedback type="invalid" style={{ fontSize: "0.75rem" }}>
+                        {formErrors[`members[${index}].count`]}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </div>
+                  <div className="col-md-2 d-flex align-items-end">
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => removeMember(index)}
+                      style={{ borderRadius: "4px", padding: "6px", fontSize: "0.85rem" }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Button
+                variant="outline-primary"
+                size="sm"
+                onClick={addMember}
+                style={{ borderRadius: "6px", padding: "6px 12px", fontSize: "0.85rem" }}
+              >
+                + Add Member
+              </Button>
             </div>
 
             <div className="d-flex justify-content-end mt-2">
@@ -605,16 +737,16 @@ export default function BikeInsuranceProviderTable() {
                 <tr>
                   <th style={{ padding: "8px", minWidth: "60px" }}>Logo</th>
                   <th style={{ padding: "8px", minWidth: "80px" }}>Name</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>Cashless Garages</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>Claims Settled</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>Claim Type</th>
                   <th style={{ padding: "8px", minWidth: "80px" }}>Premium (₹)</th>
-                  <th style={{ padding: "8px", minWidth: "100px" }}>Insurance Types</th>
                   <th style={{ padding: "8px", minWidth: "100px" }}>Key Features</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>Bike Brand</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>Bike Model</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>Bike Owned Year</th>
-                  <th style={{ padding: "8px", minWidth: "80px" }}>City Registered</th>
+                  <th style={{ padding: "8px", minWidth: "80px" }}>Claim Type</th>
+                  <th style={{ padding: "8px", minWidth: "80px" }}>Cover Amount</th>
+                  <th style={{ padding: "8px", minWidth: "80px" }}>Area Pincode</th>
+                  <th style={{ padding: "8px", minWidth: "80px" }}>Insurance For</th>
+                  <th style={{ padding: "8px", minWidth: "80px" }}>Gender</th>
+                  <th style={{ padding: "8px", minWidth: "120px" }}>Members</th>
+                  <th style={{ padding: "8px", minWidth: "120px" }}>Known Diseases</th>
+                  <th style={{ padding: "8px", minWidth: "80px" }}>Other Disease</th>
                   <th style={{ padding: "8px", minWidth: "120px" }}>Actions</th>
                 </tr>
               </thead>
@@ -641,17 +773,7 @@ export default function BikeInsuranceProviderTable() {
                       )}
                     </td>
                     <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.cashlessGarages}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.claimsSettled}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.claimType}</td>
                     <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>₹{item.premiumStartingFrom}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {item.insuranceTypes.map((type, idx) => (
-                        <Badge key={idx} bg="primary" style={{ marginRight: "4px", padding: "3px 6px", fontSize: "0.65rem" }}>
-                          {type}
-                        </Badge>
-                      ))}
-                    </td>
                     <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {item.keyFeatures.map((feature, idx) => (
                         <Badge key={idx} bg="secondary" style={{ marginRight: "4px", padding: "3px 6px", fontSize: "0.65rem" }}>
@@ -659,10 +781,28 @@ export default function BikeInsuranceProviderTable() {
                         </Badge>
                       ))}
                     </td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.bikeBrandName}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.bikeModel}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.bikeOwnedYear}</td>
-                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.bikeRegisteredCity}</td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.claimType}</td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.coverAmount}</td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.areaPincode}</td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.insuranceFor}</td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.gender}</td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {item.members.map((member, idx) => (
+                        <Badge key={idx} bg="primary" style={{ marginRight: "4px", padding: "3px 6px", fontSize: "0.65rem" }}>
+                          {member.relationship} (Age: {member.age}, Count: {member.count})
+                        </Badge>
+                      ))}
+                    </td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {item.knownDiseases.map((disease, idx) => (
+                        <Badge key={idx} bg="warning" style={{ marginRight: "4px", padding: "3px 6px", fontSize: "0.65rem", color: "#000" }}>
+                          {disease}
+                        </Badge>
+                      ))}
+                    </td>
+                    <td style={{ verticalAlign: "middle", padding: "4px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {item.otherDisease || "-"}
+                    </td>
                     <td style={{ verticalAlign: "middle", textAlign: "center", padding: "4px", whiteSpace: "nowrap" }}>
                       <Button
                         variant="outline-success"
